@@ -2,23 +2,23 @@
 const AMPXR_CACHE = 'ampxr-v1';
 
 const AMPXR_STATIC = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/ampxr/',
+  '/ampxr/index.html',
+  '/ampxr/app.js',
+  '/ampxr/manifest.json',
+  '/ampxr/icons/icon-192.png',
+  '/ampxr/icons/icon-512.png',
 ];
 
 const AMPXR_SOUNDS = [
-  '/sounds/rain.wav',
-  '/sounds/lightrain.mp3',
-  '/sounds/thunder.mp3',
-  '/sounds/fireplace.wav',
-  '/sounds/river.wav',
-  '/sounds/waves.wav',
-  '/sounds/birds.wav',
-  '/sounds/whitenoise.wav',
+  '/ampxr/sounds/rain.wav',
+  '/ampxr/sounds/lightrain.mp3',
+  '/ampxr/sounds/thunder.mp3',
+  '/ampxr/sounds/fireplace.wav',
+  '/ampxr/sounds/river.wav',
+  '/ampxr/sounds/waves.wav',
+  '/ampxr/sounds/birds.wav',
+  '/ampxr/sounds/whitenoise.wav',
 ];
 
 // Install — pre-cache all assets
