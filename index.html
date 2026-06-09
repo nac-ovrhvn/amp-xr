@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0f14">
+<title>ampxr</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0f14;
+  --surface: #151821;
+  --surface2: #1c2030;
+  --surface3: #232840;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf0;
+  --muted: #7a8099;
+  --accent: #7c9fff;
+  --accent2: #a78bfa;
+  --glow: rgba(124,159,255,0.12);
+  --danger: #ff6b6b;
+  --success: #6bffb8;
+  --font: 'DM Sans', sans-serif;
+  --serif: 'DM Serif Display', serif;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.screen { display: none; width: 100%; height: 100dvh; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#screen-login {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(124,159,255,0.08) 0%, transparent 60%);
+}
+
+.login-logo {
+  font-family: var(--serif);
+  font-size: 40px;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -1px;
+}
+
+.login-logo span { color: var(--accent); font-style: italic; }
+
+.login-tagline {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.login-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border2);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-tabs {
+  display: flex;
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-tab.active { background: var(--surface3); color: var(--text); }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field label { font-size: 12px; color: var(--muted); letter-spacing: 0.3px; }
+
+.field input {
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.field input:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--muted); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 13px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.login-error { font-size: 12px; color: var(--danger); text-align: center; min-height: 16px; }
+
+/* ── APP SCREEN ── */
+#screen-app { flex-direction: column; overflow: hidden; position: relative; }
+
+.topbar {
+  padding: 16px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.topbar-logo {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.topbar-logo span { color: var(--accent); font-style: italic; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.now-playing {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.now-playing.visible { opacity: 1; }
+
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: blink 2s infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.user-chip {
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 10px 5px 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent);
+  color: #000;
+  font-size: 10px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.user-name {
+  font-size: 12px; color: var(--muted);
+  max-width: 80px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  margin: 0 20px;
+  background: var(--surface2);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1; padding: 9px 6px;
+  border: none; background: transparent;
+  color: var(--muted);
+  font-family: var(--font); font-size: 12px; font-weight: 400;
+  border-radius: 10px; cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+
+.tab svg { width: 14px; height: 14px; }
+.tab.active { background: var(--surface); color: var(--text); font-weight: 500; }
+
+/* ── Content ── */
+.content {
+  flex: 1; overflow-y: auto;
+  padding: 16px 20px 32px;
+  display: none; flex-direction: column; gap: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content.active { display: flex; }
+
+/* ── AMBIENCE ── */
+.sound-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+
+.sound-card {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 14px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative; overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sound-card.playing {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--surface2), rgba(124,159,255,0.06));
+}
+
+.sound-card:active { transform: scale(0.97); }
+
+.sound-icon { font-size: 28px; display: block; margin-bottom: 8px; line-height: 1; }
+.sound-name { font-size: 13px; font-weight: 500; display: block; margin-bottom: 8px; color: var(--text); }
+
+.sound-vol-row {
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s; height: 16px;
+}
+
+.sound-card.playing .sound-vol-row { opacity: 1; pointer-events: all; }
+
+.mini-range {
+  -webkit-appearance: none; flex: 1;
+  height: 3px; background: rgba(255,255,255,0.15);
+  border-radius: 3px; outline: none; cursor: pointer;
+}
+
+.mini-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%; background: var(--accent);
+}
+
+.playing-dot {
+  position: absolute; top: 12px; right: 12px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); display: none;
+  animation: blink 1.5s infinite;
+}
+
+.sound-card.playing .playing-dot { display: block; }
+
+.loading-dot {
+  position: absolute; top: 12px; right: 12px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted); display: none;
+  animation: loadpulse 0.8s ease-in-out infinite;
+}
+
+@keyframes loadpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.7)} }
+
+.sound-card.loading .loading-dot { display: block; }
+.sound-card.loading .playing-dot { display: none; }
+
+.master-row {
+  background: var(--surface2); border-radius: 16px;
+  padding: 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+
+.master-row label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+.master-range {
+  -webkit-appearance: none; flex: 1;
+  height: 4px; background: rgba(255,255,255,0.12);
+  border-radius: 4px; outline: none; cursor: pointer;
+}
+
+.master-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%; background: var(--accent);
+}
+
+.vol-pct { font-size: 12px; color: var(--muted); min-width: 34px; text-align: right; }
+
+/* ── TIMER ── */
+.timer-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+
+.timer-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+
+.t-input-box { background: var(--surface2); border-radius: 14px; padding: 14px; }
+
+.t-input-box label {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  display: block; margin-bottom: 6px;
+}
+
+.t-input-box input {
+  background: transparent; border: none;
+  color: var(--text); font-family: var(--font);
+  font-size: 24px; font-weight: 500;
+  width: 100%; outline: none;
+}
+
+.t-input-box input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.t-input-box span { font-size: 11px; color: var(--muted); }
+
+.clock-ring { position: relative; width: 210px; height: 210px; flex-shrink: 0; }
+
+.clock-ring svg { transform: rotate(-90deg); width: 210px; height: 210px; }
+
+.ring-track { fill: none; stroke: var(--surface2); stroke-width: 10; }
+
+.ring-progress {
+  fill: none; stroke: var(--accent); stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 596; stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.4s;
+}
+
+.clock-ring.rest .ring-progress { stroke: var(--accent2); }
+
+.clock-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.clock-time {
+  font-family: var(--serif); font-size: 44px;
+  font-weight: 400; color: var(--text);
+  letter-spacing: -1px; line-height: 1;
+}
+
+.clock-phase { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+
+.timer-btns { display: flex; align-items: center; gap: 12px; }
+
+.btn-round {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 0.5px solid var(--border2);
+  background: var(--surface2); color: var(--text);
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-round:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-round.play {
+  width: 62px; height: 62px;
+  background: var(--accent); border-color: var(--accent);
+  color: #000; font-size: 20px;
+}
+
+.btn-round.play:hover { opacity: 0.85; }
+
+.session-strip {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  background: var(--surface2); border-radius: 14px;
+  overflow: hidden; width: 100%;
+}
+
+.session-cell {
+  padding: 14px 10px; text-align: center;
+  border-right: 0.5px solid var(--border);
+}
+
+.session-cell:last-child { border-right: none; }
+.session-cell .val { font-size: 20px; font-weight: 500; }
+.session-cell .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── STATS ── */
+.stats-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.stat-card { background: var(--surface2); border-radius: 14px; padding: 14px; }
+.stat-card .lbl { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.stat-card .val { font-size: 22px; font-weight: 500; }
+.stat-card .sub { font-size: 11px; color: var(--accent); margin-top: 3px; }
+
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+.sound-row { display: flex; align-items: center; gap: 10px; }
+.sound-row-icon { font-size: 20px; min-width: 26px; }
+.sound-row-info { flex: 1; }
+.sound-row-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+
+.bar-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+
+.sound-row-time { font-size: 12px; color: var(--muted); min-width: 38px; text-align: right; }
+
+.sync-hint { text-align: center; font-size: 12px; color: var(--muted); padding: 8px; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 32px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface3); border: 0.5px solid var(--border2);
+  border-radius: 20px; padding: 10px 18px;
+  font-size: 13px; color: var(--text);
+  opacity: 0; transition: all 0.3s;
+  pointer-events: none; z-index: 100; white-space: nowrap;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Offline ── */
+.offline-badge {
+  position: fixed; top: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,107,107,0.15);
+  border: 0.5px solid rgba(255,107,107,0.3);
+  border-radius: 20px; padding: 5px 14px;
+  font-size: 11px; color: var(--danger);
+  display: none; z-index: 50;
+}
+
+body.offline .offline-badge { display: block; }
+::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<div class="offline-badge">● offline</div>
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN ── -->
+<div class="screen active" id="screen-login">
+  <div class="login-logo">amp<span>xr</span></div>
+  <div class="login-tagline">focus through sound</div>
+
+  <div class="login-card">
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setAuthMode('login')">Sign in</button>
+      <button class="login-tab" onclick="setAuthMode('signup')">Create account</button>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+
+    <div class="field" id="field-username" style="display:none">
+      <label>Username</label>
+      <input type="text" id="auth-username" placeholder="how you'll appear" maxlength="24">
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" minlength="6">
+    </div>
+
+    <div class="login-error" id="auth-error"></div>
+
+    <button class="btn-primary" id="auth-btn" onclick="handleAuth()">Sign in</button>
+
+    <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-align:center;font-family:var(--font)" onclick="guestMode()">
+      Continue as guest →
+    </button>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div class="screen" id="screen-app">
+  <div class="topbar">
+    <div class="topbar-logo">amp<span>xr</span></div>
+    <div class="topbar-right">
+      <div class="now-playing" id="now-playing">
+        <div class="dot"></div>
+        <span id="playing-count">0</span> playing
+      </div>
+      <div class="user-chip" onclick="handleLogout()">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-name" id="user-name-label">guest</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('ambience', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Ambience
+    </button>
+    <button class="tab" onclick="switchTab('timer', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 3h6"/></svg>
+      Timer
+    </button>
+    <button class="tab" onclick="switchTab('stats', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+      Stats
+    </button>
+  </div>
+
+  <!-- AMBIENCE -->
+  <div class="content active" id="tab-ambience">
+    <div class="sound-grid" id="sound-grid"></div>
+    <div class="master-row">
+      <label>Master vol</label>
+      <input type="range" class="master-range" min="0" max="100" value="70" id="master-vol" oninput="setMasterVol(this.value)">
+      <span class="vol-pct" id="master-pct">70%</span>
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div class="content" id="tab-timer">
+    <div class="timer-wrap">
+      <div class="timer-inputs">
+        <div class="t-input-box">
+          <label>Study</label>
+          <input type="number" id="study-min" value="25" min="1" max="180" oninput="resetTimer()">
+          <span>minutes</span>
+        </div>
+        <div class="t-input-box">
+          <label>Rest</label>
+          <input type="number" id="rest-min" value="5" min="1" max="60" oninput="resetTimer()">
+          <span>minutes</span>
+        </div>
+      </div>
+
+      <div class="clock-ring" id="clock-ring">
+        <svg viewBox="0 0 210 210">
+          <circle class="ring-track" cx="105" cy="105" r="95"/>
+          <circle class="ring-progress" id="ring-arc" cx="105" cy="105" r="95"/>
+        </svg>
+        <div class="clock-center">
+          <div class="clock-time" id="clock-time">25:00</div>
+          <div class="clock-phase" id="clock-phase">study</div>
+        </div>
+      </div>
+
+      <div class="timer-btns">
+        <button class="btn-round" onclick="resetTimer()" title="Reset">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <button class="btn-round play" id="play-btn" onclick="toggleTimer()">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" id="play-icon"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <button class="btn-round" onclick="skipPhase()" title="Skip">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+      </div>
+
+      <div class="session-strip">
+        <div class="session-cell"><div class="val" id="s-sessions">0</div><div class="lbl">Sessions</div></div>
+        <div class="session-cell"><div class="val" id="s-study">0m</div><div class="lbl">Study</div></div>
+        <div class="session-cell"><div class="val" id="s-rest">0m</div><div class="lbl">Rest</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="content" id="tab-stats">
+    <div class="stats-hero">
+      <div class="stat-card">
+        <div class="lbl">Sound time</div>
+        <div class="val" id="stat-sound">0m</div>
+        <div class="sub">this session</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Sessions done</div>
+        <div class="val" id="stat-sessions">0</div>
+        <div class="sub" id="stat-sessions-sub">0m study</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Study time</div>
+        <div class="val" id="stat-study">0m</div>
+        <div class="sub">focused</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Sounds used</div>
+        <div class="val" id="stat-sounds-used">0</div>
+        <div class="sub">unique</div>
+      </div>
+    </div>
+
+    <div class="section-label">Sound breakdown</div>
+    <div id="sound-stats-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div class="sync-hint" id="sync-hint"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
