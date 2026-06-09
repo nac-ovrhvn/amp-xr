@@ -7,7 +7,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // ── Supabase Config ───────────────────────────
-const AMPXR_SUPABASE_URL      = 'https://avjikdnuswuqiqsacpou.supabase.co/rest/v1/';
+const AMPXR_SUPABASE_URL      = 'https://avjikdnuswuqiqsacpou.supabase.co';
 const AMPXR_PUBLISHABLE_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2amlrZG51c3d1cWlxc2FjcG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5ODE3NjQsImV4cCI6MjA5NjU1Nzc2NH0.CnFaa9BGhWQvqO5tTiKtrFCL7YC-NlCYImKd3h3IgTE';
 
 const ampxrDb = createClient(AMPXR_SUPABASE_URL, AMPXR_PUBLISHABLE_KEY);
