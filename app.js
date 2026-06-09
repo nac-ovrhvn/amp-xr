@@ -104,13 +104,6 @@ async function handleAuth() {
       });
       if (error) throw error;
       if (data.user) {
-        await ampxrDb.from('profiles').upsert({ id: data.user.id, username });
-        await ampxrDb.from('stats').upsert({
-          user_id: data.user.id,
-          total_sound_secs: 0, total_study_secs: 0,
-          total_rest_secs: 0,  total_sessions: 0,
-          sound_breakdown: {}
-        });
         ampxrShowToast('Account created! Check your email to verify.');
         setAuthMode('login');
       }
