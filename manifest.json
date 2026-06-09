@@ -2,7 +2,7 @@
   "name": "ampxr",
   "short_name": "ampxr",
   "description": "Ambient sounds and focus timer",
-  "start_url": "/",
+  "start_url": "/ampxr/",
   "display": "standalone",
   "background_color": "#0d0f14",
   "theme_color": "#0d0f14",
