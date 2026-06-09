@@ -598,7 +598,7 @@ if (!navigator.onLine) document.body.classList.add('offline');
 // ── Service Worker Registration ───────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/ampxr/sw.js')
       .then(() => console.log('[ampxr SW] Registered'))
       .catch(e => console.warn('[ampxr SW] Failed:', e));
   });
